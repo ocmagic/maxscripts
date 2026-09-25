@@ -1,4 +1,4 @@
-/*  SGOverlay.ms  (v4 : 高速化版 その2)
+/*  SGOverlay.ms  (v4.1 : 高速化版 その2)
     ------------------------------------------------------------
     Editable Poly / ポリゴン編集(Edit Poly) のポリゴン・要素レベルで、
     選択中の各ポリゴンの中心に以下をオーバーレイ表示します。
@@ -264,13 +264,13 @@ fn sgOverlayFetchGeoEPoly obj faces =
     local todo = faces - sgOverlayFDoneGeo
     if not todo.isEmpty do
     (
-        local FC = sgOverlayFC, FN = sgOverlayFN
+        local FC = sgOverlayFC, FNrm = sgOverlayFN
         in coordsys world
         (
             for f in todo do
             (
                 FC[f] = polyop.getFaceCenter obj f
-                FN[f] = polyop.getFaceNormal obj f
+                FNrm[f] = polyop.getFaceNormal obj f
             )
         )
         sgOverlayFDoneGeo += todo
@@ -294,7 +294,7 @@ fn sgOverlayFetchGeoEditPoly cur obj faces =
             sgOverlayUseTM = (distance (v0 * tm) ctr) < (distance v0 ctr)
         )
         local useTM = sgOverlayUseTM
-        local FC = sgOverlayFC, FN = sgOverlayFN
+        local FC = sgOverlayFC, FNrm = sgOverlayFN
         local VP = sgOverlayVP, VD = sgOverlayVDone
 
         for f in todo do
@@ -323,7 +323,7 @@ fn sgOverlayFetchGeoEditPoly cur obj faces =
                 c /= deg
             )
             FC[f] = c
-            FN[f] = n
+            FNrm[f] = n
         )
         sgOverlayFDoneGeo += todo
     )
@@ -476,7 +476,7 @@ fn sgOverlayBuildScreen kind cur obj sel =
     local offS   = if mode == 3 then -sz * 0.8 else 0.0
     local offI   = if mode == 3 then  sz * 0.8 else 0.0
     local FC     = sgOverlayFC
-    local FN     = sgOverlayFN
+    local FNrm     = sgOverlayFN
 
     -- ---- ① クラスタ単位の絞り込み ----
     local cand = sel
@@ -522,9 +522,9 @@ fn sgOverlayBuildScreen kind cur obj sel =
         (
             local toC = c - camPos
             if (dot toC camZ) >= 0 then vis = false
-            else if cull and (dot FN[f] toC) > 0 do vis = false
+            else if cull and (dot FNrm[f] toC) > 0 do vis = false
         )
-        else if cull and (dot FN[f] camZ) < 0 do vis = false
+        else if cull and (dot FNrm[f] camZ) < 0 do vis = false
 
         if vis do
         (
